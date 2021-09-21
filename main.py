@@ -7,7 +7,6 @@ import re
 
 
 
-
 BOT_TOKEN = '2038024519:AAFqwDWL0d8IMEoMVsSl_3pew43o-bC0t8w'
 
 updater = Updater(BOT_TOKEN)
@@ -42,7 +41,7 @@ def send_secret_pm(update:Update , context:CallbackContext)->None:
 
     mention = get_mention(update)
 
-    secret_message = query.split(' @')
+    secret_message = re.findall(r'^(.+)\s\@',string = query,flags=re.S)
 
     inline_keyboard = [
         [InlineKeyboardButton(text = 'نمایش متن پیام🔏',callback_data=secret_message)]
@@ -70,7 +69,7 @@ def recive_secret_pm(update:Update , context : CallbackContext)->None:
     query = update.callback_query
     secret_message = query.data
     print(update)
-    print(secret_message)
+    print(query)
     
     
 
