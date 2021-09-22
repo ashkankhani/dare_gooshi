@@ -1,15 +1,13 @@
 import re
 
 
-text = '''matn @inerpfnergpe 
-werwrwerwerwerwer
-werwerwerwerwe
-@woe
+text = '''matn
+fnpwefwefwep powmpowef
 '''
 
+#main (.+)\s\@(.*)
+
+res = re.findall(r'^(.+)\s\@(.*)',string = text,flags=re.S)
 
 
-res = re.findall(r'^(.+)\s\@',string = text,flags=re.S)
-
-
-print(res[0])
+print(len(res))
