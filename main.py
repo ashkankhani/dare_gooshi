@@ -1,6 +1,7 @@
 from telegram.ext import (Updater,InlineQueryHandler,
 CommandHandler,CallbackContext,CallbackQueryHandler,
 ChosenInlineResultHandler)
+from telegram.ext.filters import Filters
 from telegram.update import Update
 from telegram import (Chat,InlineQueryResultArticle,InputTextMessageContent,
 InlineKeyboardButton,InlineKeyboardMarkup,
@@ -16,7 +17,7 @@ from sqlite3 import connect,IntegrityError
 
 with connect('database.db') as connection: #===> make database
     cursor = connection.cursor()
-    cursor.execute('''CREATE TABLE "messages" (
+    cursor.execute('''CREATE TABLE if not exists "messages" (
 	"id"	INTEGER,
 	"message"	TEXT NOT NULL,
 	"reciver"	TEXT NOT NULL,
@@ -126,7 +127,6 @@ def recive_secret_pm(update:Update , context : CallbackContext)->None:
     inline_id = query.inline_message_id
     user_name = query.from_user.username
     user_id = query.from_user.id
-    print(inline_id)
     res = get_message_text(inline_id,user_name,user_id)
     if(res):
         query.answer(f'متن پیام✍️:\n{res[0]}',show_alert=True)
@@ -166,18 +166,44 @@ def send_secret_pm(update:Update , context:CallbackContext):
     inline = update.chosen_inline_result
     inline_id = inline.inline_message_id
     if(inline_id):
-        print(inline.query)
         message , reciver = re.findall(r'^(.+)\s\@(.*)',string = inline.query,flags=re.S)[0]
         user_id = inline.from_user.id
-        try:
-            message_saver(message,reciver,user_id,inline_id)
-        except IntegrityError:
-            pass
+        message_saver(message,reciver,user_id,inline_id)
+        
+
+
+
+def save_user(update : Update):
+    user_id = update.message.chat.id
+    with connect('database.db') as connection:
+        cursor = connection.cursor()
+        cursor.execute(f'''insert into users
+        (user_id)
+        values(
+            {user_id}
+        )
+        ''')
 
 
 
 
-    #print(update)
+def start(update:Update , context:CallbackContext):
+    update.message.reply_text('''سلام دوست عزیزم به ربات ما خوش اومدی!🥳
+خوشحالیم که اینجا میبینیمت!
+خب حرف زیادی نزنم و بریم که خودمو بهت معرفی کنم😅
+خب همونطور که از اسمم پیداست من ربات در گوشی هستم!🦻
+یعنی اگه از من توی گروه استفاده کنی و به بقیه پیام بدی,انگار که در گوشی با اون طرف حرف زدی😉
+یعنی فقط مخاطبت میتونه پیامتو بخونه..
+خب بریم سر راهنما🆘:
+کافیه توی گروه مورد نظر **ایدی منو + متن پیام + آیدی مخاطبت** تایپ کنی تا بهت پیام قفل شده تحویل بدم!
+یعنی مثلا اینطوری:
+`@dare_gooshi_bot سلااااام @mamad`
+امیدوارم موفق باشی😊
+''',parse_mode=ParseMode().MARKDOWN)
+    try:
+        save_user(update)
+    except IntegrityError:
+        pass
     
     
 
@@ -198,12 +224,15 @@ def main()->None:
 
     type_secret_pm_handler = InlineQueryHandler(type_secret_pm ,chat_types=[Chat.SUPERGROUP]) #bara darje pm
     send_secret_pm_handler = ChosenInlineResultHandler(send_secret_pm)
-    recive_secret_pm_handler = CallbackQueryHandler(recive_secret_pm)
+    recive_secret_pm_handler = CallbackQueryHandler(recive_secret_pm,pattern='^read$')
+
+    start_handler = CommandHandler('start' , start , Filters.chat_type.private)
     
     dispatcher.add_handler(send_secret_pm_handler)
     dispatcher.add_handler(type_secret_pm_handler)
     
     dispatcher.add_handler(recive_secret_pm_handler)
+    dispatcher.add_handler(start_handler)
     
 
 
