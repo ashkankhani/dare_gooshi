@@ -1,11 +1,4 @@
-Ashkan Khani, [22.09.21 17:05]
-[In reply to Ashkan Khani]
-{'chosen_inline_result': {'query': 'wefwefwef @ashkan', 'inline_message_id': 'BAAAACABAABZ1OO2xe-07XiuxtU', 'result_id': 'd1e0550a-49a5-48fb-8c9c-58ebae0613fc', 'from': {'first_name': 'Ashkan', 'language_code': 'en', 'is_bot': False, 'id': 800882871, 'last_name': 'Khani', 'username': 'drashkankhani'}}, 'update_id': 23647811}
-
-Ashkan Khani, [22.09.21 17:05]
-[In reply to Ashkan Khani]
-{'callback_query': {'inline_message_id': 'BAAAACABAABZ1OO2xe-07XiuxtU', 'data': 'wefwefwef$ashkan', 'chat_instance': '5116216413427646141', 
-'id': '3439765742966418725', 'from': {'first_name': 'Ashkan', 'language_code': 'en', 'is_bot': False, 'id': 800882871, 'last_name': 'Khani', 'username': 'drashkankhani'}}, 'update_id': 23647812}
------------------------------
-{'offset': '', 'chat_type': 'supergroup', 'query': 'fefoper @powjfpoewf', 'id': '3439765741152125796', 'from': {'last_name': 'Khani', 'is_bot': False, 'first_name': 'Ashkan', 'username': 'drashkankhani', 'id': 800882871, 'language_code': 'en'}}
-{'update_id': 23647814, 'chosen_inline_result': {'query': 'fefoper @powjfpoewf', 'inline_message_id': 'BAAAACUBAABZ1OO2JPfmG3OSoIU', 'result_id': '0f5b39ab-d990-4911-a3eb-a9be490db536', 'from': {'last_name': 'Khani', 'is_bot': False, 'first_name': 'Ashkan', 'username': 'drashkankhani', 'id': 800882871, 'language_code': 'en'}}}
+{'update_id': 23648074, 'callback_query': {'data': 'read', 'inline_message_id': 'BAAAAD8BAABZ1OO2hjaNPb7FAKY', 'id': '3439765740744795772', 'chat_instance': '5116216413427646141', 'from': {'username': 'drashkankhani', 'last_name': 'Khani', 'is_bot': False, 'language_code': 'en', 'id': 800882871, 'first_name': 'Ashkan'
+        }
+    }
+}

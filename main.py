@@ -3,9 +3,41 @@ CommandHandler,CallbackContext,CallbackQueryHandler,
 ChosenInlineResultHandler)
 from telegram.update import Update
 from telegram import (Chat,InlineQueryResultArticle,InputTextMessageContent,
-InlineKeyboardButton,InlineKeyboardMarkup,User,ParseMode)
+InlineKeyboardButton,InlineKeyboardMarkup,
+User,ParseMode, user)
 from uuid import uuid4
 import re
+from sqlite3 import connect,IntegrityError
+
+
+
+
+
+
+with connect('database.db') as connection: #===> make database
+    cursor = connection.cursor()
+    cursor.execute('''CREATE TABLE "messages" (
+	"id"	INTEGER,
+	"message"	TEXT NOT NULL,
+	"reciver"	TEXT NOT NULL,
+	"user_id"	INTEGER NOT NULL,
+	"inline_id"	INTEGER NOT NULL UNIQUE,
+	PRIMARY KEY("id" AUTOINCREMENT)
+)
+''')
+    cursor.execute('''CREATE TABLE if not exists "users" (
+	"id"	INTEGER,
+	"user_id"	INTEGER NOT NULL UNIQUE,
+	PRIMARY KEY("id" AUTOINCREMENT)
+)
+''')
+    connection.commit()
+
+
+
+
+
+
 
 
 
@@ -43,7 +75,7 @@ def type_secret_pm(update:Update , context:CallbackContext)->None:
 
     mention = get_mention(update)
 
-    res = re.findall(r'^(.+)\s\@(.*)',string = query,flags=re.S)
+    res = re.findall(r'^(.+)\s\@(.*)',string = query,flags=re.S) #motabeghe matn kamel
     #print(res)
 
     if(len(res) and len(res[0][0])<=200): #===> kamel
@@ -55,33 +87,97 @@ def type_secret_pm(update:Update , context:CallbackContext)->None:
         results = [
             InlineQueryResultArticle(
                 id = str(uuid4()),
-                title = f'متن پیام شما : {secret_message}',
+                title = f'متن پیامتون: {secret_message}',
                 input_message_content=InputTextMessageContent(f'یک پیام از {mention} داری',parse_mode=ParseMode.MARKDOWN_V2),
-                description  = f'پیام شما به آیدی {user_name}@ ارسال خواهد شد!⚠️',
+                description  = f'پیامتو برای ({user_name}@) میفرستم✅\n{len(secret_message)}/200',
                 reply_markup = inline_keyboard_markup,
                 )
         ]
-        update.inline_query.answer(results)
+
         #print(id)
     elif(len(query) <= 200):
-        print('faght matn ok')
+        results = [
+            InlineQueryResultArticle(
+                id = str(uuid4()),
+                title = f'متن پیامتون: {query}',
+                input_message_content=InputTextMessageContent(f'ای بابا آیدی طرفو نزدی که😶',),
+                description  = f'⚠️یادت نره که آیدی گیرنده رو بنویسی\n{len(query)}/200',
+                )
+        ]
     else:
-        print('matn ziad')
+        results = [
+            InlineQueryResultArticle(
+                id = str(uuid4()),
+                title = 'خطا!',
+                description = 'متنتون خیلی بلنده چطوره یکم کوتاه کنین؟',
+                input_message_content=InputTextMessageContent('اوه اوه متنت خیلی بلند بود که😞'),
+
+            )
+        ]
+
+    update.inline_query.answer(results)
 
 
 
 
 
 def recive_secret_pm(update:Update , context : CallbackContext)->None:
-    # query = update.callback_query
-    # #secret_message = query.data
-    # #print(update)
-    # print(query)
-    print(update)
+    query = update.callback_query
+    inline_id = query.inline_message_id
+    user_name = query.from_user.username
+    user_id = query.from_user.id
+    print(inline_id)
+    res = get_message_text(inline_id,user_name,user_id)
+    if(res):
+        query.answer(f'متن پیام✍️:\n{res[0]}',show_alert=True)
+    else:
+        query.answer('ای فضول دیدی مچتو گرفتم؟😉')
+
+    
+
+
+
+def message_saver(message,reciver,user_id,inline_id):
+    with connect('database.db') as connection:
+        cursor = connection.cursor()
+        cursor.execute(f'''insert into messages
+        (message,reciver,user_id,inline_id)
+        values(
+            '{message}','{reciver}',{user_id},'{inline_id}'
+        )
+        ''')
+        connection.commit()
+
+
+def get_message_text(inline_id,user_name,user_id):
+    with connect('database.db') as connection:
+        cursor = connection.cursor()
+        cursor.execute(f'''select message
+        from messages
+        where inline_id = '{inline_id}' and (reciver = '{user_name}' or user_id = {user_id})
+        ''')
+        res = cursor.fetchone()
+
+    return res
+
 
 
 def send_secret_pm(update:Update , context:CallbackContext):
-    print(update)
+    inline = update.chosen_inline_result
+    inline_id = inline.inline_message_id
+    if(inline_id):
+        print(inline.query)
+        message , reciver = re.findall(r'^(.+)\s\@(.*)',string = inline.query,flags=re.S)[0]
+        user_id = inline.from_user.id
+        try:
+            message_saver(message,reciver,user_id,inline_id)
+        except IntegrityError:
+            pass
+
+
+
+
+    #print(update)
     
     
 
