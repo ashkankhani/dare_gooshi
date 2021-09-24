@@ -1,6 +1,6 @@
 from telegram.ext import (Updater,InlineQueryHandler,
 CommandHandler,CallbackContext,CallbackQueryHandler,
-ChosenInlineResultHandler)
+ChosenInlineResultHandler,MessageHandler)
 from telegram.ext.filters import Filters
 from telegram.update import Update
 from telegram import (Chat,InlineQueryResultArticle,InputTextMessageContent,
@@ -209,6 +209,32 @@ def start(update:Update , context:CallbackContext):
 
 
 
+def get_stats():
+    with connect('database.db') as connection:
+        cursor = connection.cursor()
+        cursor.execute('''select count (id)
+        from users
+        ''')
+        user_count = cursor.fetchone()[0]
+        cursor.execute('''select count (id)
+        from messages
+        ''')
+        message_count = cursor.fetchone()[0]
+
+    return (user_count,message_count)
+
+
+def stats(update:Update , context:CallbackContext):
+    user_count,message_count = get_stats()
+    update.message.reply_text(f'''تعداد کاربران ربات:
+{user_count}
+تعداد پیام ها:
+{message_count}
+''')
+    
+
+
+
 
 
 
@@ -222,17 +248,21 @@ def main()->None:
     
     dispatcher = updater.dispatcher
 
-    type_secret_pm_handler = InlineQueryHandler(type_secret_pm ,chat_types=[Chat.SUPERGROUP]) #bara darje pm
-    send_secret_pm_handler = ChosenInlineResultHandler(send_secret_pm)
-    recive_secret_pm_handler = CallbackQueryHandler(recive_secret_pm,pattern='^read$')
+    type_secret_pm_handler = InlineQueryHandler(type_secret_pm ,chat_types=[Chat.SUPERGROUP,Chat.GROUP],run_async=True,) #bara darje pm
+    send_secret_pm_handler = ChosenInlineResultHandler(send_secret_pm,run_async=True)
+    recive_secret_pm_handler = CallbackQueryHandler(recive_secret_pm,pattern='^read$',run_async=True)
 
-    start_handler = CommandHandler('start' , start , Filters.chat_type.private)
+    stats_handler = CommandHandler('stats' , stats , Filters.chat_type.private,run_async=True)
+
+    welcome_handler = MessageHandler(Filters.all , start)
     
     dispatcher.add_handler(send_secret_pm_handler)
     dispatcher.add_handler(type_secret_pm_handler)
     
     dispatcher.add_handler(recive_secret_pm_handler)
-    dispatcher.add_handler(start_handler)
+    dispatcher.add_handler(stats_handler)
+    dispatcher.add_handler(welcome_handler)
+    
     
 
 
